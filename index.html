@@ -1,0 +1,776 @@
+<!doctype html>
+<html lang="ko">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>빈 강의실의 세 가지 목소리</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Nanum+Myeongjo:wght@400;700;800&family=IBM+Plex+Sans+KR:wght@400;500;600&display=swap">
+<style>
+/* Layout: 한 장씩 넘기는 종이 기록장 — 좁은 단일 칼럼, 상단 진행 단계, 장면마다 작은 선화 아이콘 */
+:root {
+  --paper: #F5F0E4;
+  --card: #FCF9F2;
+  --ink: #1E2738;
+  --ink-soft: #545C6B;
+  --line: #DCD2BE;
+  --navy: #24375E;
+  --sage: #557259;
+  --terra: #A85A3B;
+  --gold: #A9822F;
+  --on-accent: #FCF9F2;
+  --grain: rgba(80, 60, 30, .035);
+  --font-display: "Nanum Myeongjo", "Noto Serif KR", "AppleMyungjo", serif;
+  --font-body: "IBM Plex Sans KR", "Apple SD Gothic Neo", "Malgun Gothic", system-ui, sans-serif;
+}
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) {
+    --paper: #141A24; --card: #1C2330; --ink: #ECE6D8; --ink-soft: #B2AEA3; --line: #323B4B;
+    --navy: #93ABD9; --sage: #9EBC9F; --terra: #DF9877; --gold: #D8B562; --on-accent: #141A24;
+    --grain: rgba(255, 240, 210, .025); color-scheme: dark;
+  }
+}
+:root[data-theme="dark"] {
+  --paper: #141A24; --card: #1C2330; --ink: #ECE6D8; --ink-soft: #B2AEA3; --line: #323B4B;
+  --navy: #93ABD9; --sage: #9EBC9F; --terra: #DF9877; --gold: #D8B562; --on-accent: #141A24;
+  --grain: rgba(255, 240, 210, .025); color-scheme: dark;
+}
+
+* { box-sizing: border-box; }
+html, body { margin: 0; }
+:root { padding-top: env(safe-area-inset-top, 0px); padding-bottom: env(safe-area-inset-bottom, 0px); }
+body {
+  background-color: var(--paper);
+  background-image:
+    repeating-linear-gradient(0deg, var(--grain) 0 1px, transparent 1px 3px),
+    repeating-linear-gradient(90deg, var(--grain) 0 1px, transparent 1px 4px);
+  color: var(--ink);
+  font-family: var(--font-body);
+  font-size: 17px;
+  line-height: 1.75;
+  word-break: keep-all;
+  overflow-wrap: anywhere;
+}
+#root { min-height: 100vh; }
+.wrap {
+  max-width: 720px; margin: 0 auto;
+  padding-left: max(16px, env(safe-area-inset-left, 0px));
+  padding-right: max(16px, env(safe-area-inset-right, 0px));
+  padding-block: 0 64px;
+}
+h1, h2, h3 { font-family: var(--font-display); font-weight: 800; text-wrap: balance; line-height: 1.35; margin: 0; }
+p { margin: 0; }
+:focus-visible { outline: 3px solid var(--gold); outline-offset: 3px; border-radius: 6px; }
+h2:focus, h1:focus { outline: none; }
+
+/* ---------- 상단 ---------- */
+.top {
+  position: sticky; top: env(safe-area-inset-top, 0px); z-index: 5;
+  background: var(--paper);
+  border-bottom: 1px solid var(--line);
+}
+body::before { content: ""; position: fixed; inset: 0 0 auto; height: env(safe-area-inset-top, 0px); z-index: 10; background: var(--paper); }
+.top-inner {
+  max-width: 720px; margin: 0 auto;
+  padding-left: max(16px, env(safe-area-inset-left, 0px));
+  padding-right: max(16px, env(safe-area-inset-right, 0px));
+  padding-block: 12px 10px;
+}
+.brand { display: flex; justify-content: space-between; align-items: baseline; gap: 8px; flex-wrap: wrap; }
+.brand-name { font-family: var(--font-display); font-weight: 700; font-size: 15px; color: var(--navy); }
+.badge { font-size: 12px; letter-spacing: .04em; padding: 2px 10px; border: 1px solid var(--gold); color: var(--gold); border-radius: 999px; }
+.steps { list-style: none; margin: 8px 0 0; padding: 0; display: flex; gap: 4px; }
+.steps li { flex: 1 1 0; min-width: 0; }
+.steps .bar { height: 4px; border-radius: 2px; background: var(--line); }
+.steps li.done .bar { background: var(--navy); opacity: .45; }
+.steps li.now .bar { background: var(--navy); }
+.steps .lbl { display: block; font-size: 12.5px; color: var(--ink-soft); margin-top: 5px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.steps li.now .lbl { color: var(--ink); font-weight: 600; }
+.steps .arrow { color: var(--line); }
+@media (max-width: 520px) {
+  .steps .lbl { font-size: 11px; white-space: normal; line-height: 1.3; }
+}
+
+/* ---------- 화면 공통 ---------- */
+.screen { padding-top: 36px; display: flex; flex-direction: column; gap: 24px; animation: fade .5s ease both; }
+@keyframes fade { from { opacity: .001; transform: translateY(6px); } to { opacity: 1; transform: none; } }
+@media (prefers-reduced-motion: reduce) { .screen, .reveal { animation: none !important; } }
+.eyebrow { font-size: 13px; letter-spacing: .08em; color: var(--ink-soft); font-weight: 600; }
+.lede { font-size: 18.5px; line-height: 1.85; }
+.muted { color: var(--ink-soft); }
+.small { font-size: 15px; }
+.icon { width: 44px; height: 44px; color: var(--navy); flex: none; }
+.icon svg { width: 100%; height: 100%; }
+.headrow { display: flex; gap: 14px; align-items: center; }
+.headrow > div { min-width: 0; }
+
+.card { background: var(--card); border: 1px solid var(--line); border-radius: 10px; padding: 22px; }
+.note { border-left: 3px solid var(--gold); padding: 4px 0 4px 16px; color: var(--ink-soft); font-size: 15.5px; }
+
+/* ---------- 버튼 ---------- */
+.actions { display: flex; gap: 10px; flex-wrap: wrap; justify-content: space-between; align-items: center; }
+.actions .spacer { flex: 1; }
+.btn {
+  font: inherit; font-weight: 600; font-size: 17px;
+  min-height: 52px; padding: 12px 26px; border-radius: 8px;
+  border: 1.5px solid var(--navy); background: var(--navy); color: var(--on-accent);
+  cursor: pointer; transition: transform .15s ease, opacity .15s ease;
+}
+.btn:hover:not(:disabled) { transform: translateY(-1px); }
+.btn:disabled { opacity: .35; cursor: not-allowed; }
+.btn.ghost { background: transparent; color: var(--navy); }
+.btn.big { font-size: 18.5px; padding: 14px 32px; }
+
+/* ---------- 선택지 카드 ---------- */
+.options { display: flex; flex-direction: column; gap: 12px; border: 0; padding: 0; margin: 0; min-width: 0; }
+.options legend { padding: 0; margin-bottom: 14px; font-family: var(--font-display); font-weight: 700; font-size: 21px; line-height: 1.5; text-wrap: balance; }
+.opt { position: relative; display: flex; gap: 14px; align-items: flex-start; padding: 16px 18px; min-height: 60px; background: var(--card); border: 1.5px solid var(--line); border-radius: 10px; cursor: pointer; transition: border-color .15s, background .15s; }
+.opt:hover { border-color: var(--ink-soft); }
+.opt input { position: absolute; opacity: 0; width: 1px; height: 1px; }
+.opt .key { flex: none; width: 32px; height: 32px; border-radius: 50%; border: 1.5px solid var(--line); display: grid; place-items: center; font-weight: 600; font-size: 15px; color: var(--ink-soft); margin-top: 1px; }
+.opt .txt { min-width: 0; font-size: 17px; }
+.opt:has(input:checked) { border-color: var(--navy); background: color-mix(in srgb, var(--navy) 7%, var(--card)); }
+.opt:has(input:checked) .key { background: var(--navy); border-color: var(--navy); color: var(--on-accent); }
+.opt:has(input:focus-visible) { outline: 3px solid var(--gold); outline-offset: 3px; }
+
+.counter { font-variant-numeric: tabular-nums; font-weight: 600; color: var(--navy); font-size: 15px; }
+.qbar { height: 3px; background: var(--line); border-radius: 2px; overflow: hidden; }
+.qbar span { display: block; height: 100%; background: var(--gold); transition: width .3s ease; }
+
+/* ---------- 역할 ---------- */
+.role { --rc: var(--navy); }
+.role-life { --rc: var(--navy); }
+.role-link { --rc: var(--sage); }
+.role-delib { --rc: var(--terra); }
+.rolecard { border: 1.5px solid var(--rc); border-radius: 12px; background: var(--card); overflow: hidden; }
+.rolecard .rhead { background: color-mix(in srgb, var(--rc) 12%, var(--card)); padding: 22px 22px 18px; border-bottom: 1px solid color-mix(in srgb, var(--rc) 30%, transparent); }
+.rolecard .rname { font-family: var(--font-display); font-weight: 800; font-size: 28px; color: var(--rc); }
+.rolecard .rq { font-family: var(--font-display); font-size: 19px; font-weight: 700; margin-top: 6px; }
+.rolecard .rbody { padding: 18px 22px 22px; display: flex; flex-direction: column; gap: 14px; }
+.kv { display: grid; grid-template-columns: 6.5em 1fr; gap: 4px 12px; }
+.kv dt { font-size: 14px; color: var(--ink-soft); font-weight: 600; padding-top: 2px; }
+.kv dd { margin: 0; min-width: 0; }
+@media (max-width: 460px) { .kv { grid-template-columns: 1fr; } .kv dd { margin-bottom: 8px; } }
+.scores { display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px; }
+.score { padding: 12px 14px; border-radius: 8px; border: 1px solid var(--line); background: var(--card); min-width: 0; }
+.score .n { font-variant-numeric: tabular-nums; font-size: 22px; font-weight: 600; color: var(--rc); }
+.score .l { font-size: 13.5px; color: var(--ink-soft); }
+.dots { display: flex; gap: 3px; margin-top: 6px; flex-wrap: wrap; }
+.dots i { width: 8px; height: 8px; border-radius: 50%; background: var(--line); }
+.dots i.on { background: var(--rc); }
+@media (max-width: 460px) { .scores { grid-template-columns: 1fr; } }
+.tie-pick .opt:has(input:checked) { border-color: var(--rc); background: color-mix(in srgb, var(--rc) 8%, var(--card)); }
+.tie-pick .opt:has(input:checked) .key { background: var(--rc); border-color: var(--rc); }
+
+.chip { display: inline-flex; align-items: center; gap: 6px; font-size: 13.5px; font-weight: 600; padding: 3px 12px; border-radius: 999px; color: var(--rc); border: 1px solid color-mix(in srgb, var(--rc) 50%, transparent); background: color-mix(in srgb, var(--rc) 8%, transparent); }
+.summary { display: flex; flex-wrap: wrap; gap: 10px 18px; align-items: center; padding: 14px 18px; border: 1px dashed var(--line); border-radius: 10px; font-size: 15px; }
+.summary b { font-weight: 600; }
+
+/* ---------- 장면 ---------- */
+.block { display: flex; flex-direction: column; gap: 10px; }
+.blabel { display: flex; align-items: center; gap: 8px; font-size: 13px; letter-spacing: .08em; font-weight: 600; color: var(--ink-soft); }
+.blabel::after { content: ""; flex: 1; height: 1px; background: var(--line); }
+.narr { font-family: var(--font-display); font-size: 20px; line-height: 1.9; }
+.voice { display: flex; gap: 12px; align-items: flex-start; }
+.voice .icon { width: 30px; height: 30px; color: var(--ink-soft); margin-top: 4px; }
+.voice blockquote { margin: 0; min-width: 0; }
+.voice blockquote p { font-size: 17.5px; }
+.voice cite { display: block; font-style: normal; font-size: 14px; color: var(--ink-soft); margin-top: 4px; }
+.voices { display: flex; flex-direction: column; gap: 16px; }
+.lens { padding: 12px 16px; border-radius: 8px; background: color-mix(in srgb, var(--rc) 9%, transparent); font-size: 15.5px; }
+.lens b { color: var(--rc); font-weight: 600; }
+.reveal { animation: fade .45s ease both; }
+.feedback { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
+.feedback .card { padding: 16px 18px; }
+.feedback h3 { font-family: var(--font-body); font-size: 13.5px; letter-spacing: .06em; font-weight: 600; color: var(--ink-soft); margin-bottom: 4px; }
+.feedback .card.val { border-top: 3px solid var(--sage); }
+.feedback .card.que { border-top: 3px solid var(--gold); }
+@media (max-width: 560px) { .feedback { grid-template-columns: 1fr; } }
+.common { font-family: var(--font-display); font-size: 18px; font-weight: 700; line-height: 1.75; color: var(--navy); padding: 6px 0 0; }
+.path { list-style: none; padding: 0; margin: 0; display: flex; flex-direction: column; gap: 8px; }
+.path li { display: grid; grid-template-columns: 5.5em 1fr; gap: 10px; font-size: 15.5px; }
+.path li span:first-child { color: var(--ink-soft); }
+.path li span { min-width: 0; }
+
+/* ---------- 제안서 ---------- */
+.field { display: flex; flex-direction: column; gap: 6px; }
+.field label { font-weight: 600; font-size: 16px; }
+.field textarea { font: inherit; font-size: 16.5px; line-height: 1.7; color: var(--ink); background: var(--card); border: 1.5px solid var(--line); border-radius: 8px; padding: 12px 14px; min-height: 92px; resize: vertical; width: 100%; }
+.field textarea:focus { border-color: var(--navy); outline: none; box-shadow: 0 0 0 3px color-mix(in srgb, var(--gold) 45%, transparent); }
+.doc { background: var(--card); border: 1px solid var(--line); border-radius: 4px; padding: 30px 28px; box-shadow: 0 1px 0 var(--line), 0 10px 26px -18px rgba(0,0,0,.35); position: relative; }
+.doc::before { content: ""; position: absolute; inset: 8px; border: 1px solid var(--line); pointer-events: none; border-radius: 2px; }
+.doc-head { text-align: center; display: flex; flex-direction: column; gap: 4px; padding-bottom: 16px; border-bottom: 2px solid var(--navy); }
+.doc-head h3 { font-size: 26px; color: var(--navy); letter-spacing: .1em; }
+.doc-head .meta { font-size: 13.5px; color: var(--ink-soft); }
+.doc dl { margin: 18px 0 0; display: flex; flex-direction: column; gap: 14px; }
+.doc dt { font-size: 13.5px; font-weight: 600; color: var(--gold); letter-spacing: .04em; }
+.doc dd { margin: 2px 0 0; white-space: pre-wrap; font-size: 16.5px; }
+.doc dd.empty { color: var(--ink-soft); font-style: italic; }
+.doc-foot { margin-top: 20px; padding-top: 12px; border-top: 1px solid var(--line); font-size: 13.5px; color: var(--ink-soft); display: flex; justify-content: space-between; gap: 10px; flex-wrap: wrap; }
+@media (max-width: 460px) { .doc { padding: 24px 18px; } }
+
+/* ---------- 돌아보기 ---------- */
+.compare { display: grid; grid-template-columns: 1fr auto 1fr; gap: 12px; align-items: stretch; }
+.compare .card { text-align: center; padding: 18px; }
+.compare .card .k { font-size: 13.5px; color: var(--ink-soft); font-weight: 600; letter-spacing: .06em; }
+.compare .card .v { font-family: var(--font-display); font-weight: 800; font-size: 20px; margin-top: 6px; }
+.compare .arr { align-self: center; color: var(--gold); font-size: 22px; }
+@media (max-width: 520px) { .compare { grid-template-columns: 1fr; } .compare .arr { transform: rotate(90deg); justify-self: center; } }
+.verdict { text-align: center; font-family: var(--font-display); font-size: 19px; font-weight: 700; color: var(--navy); }
+.principles { display: flex; flex-direction: column; gap: 0; }
+.principle { display: grid; grid-template-columns: 9em 1fr; gap: 14px; padding: 14px 0; border-top: 1px solid var(--line); }
+.principle:first-of-type { border-top: 0; }
+.principle h3 { font-size: 17px; color: var(--navy); }
+.principle p { min-width: 0; }
+@media (max-width: 520px) { .principle { grid-template-columns: 1fr; gap: 2px; } }
+.closing { font-family: var(--font-display); font-size: 21px; line-height: 1.9; font-weight: 700; text-align: center; padding: 28px 8px; border-block: 1px solid var(--line); }
+
+/* ---------- 첫 화면 ---------- */
+.hero { padding-top: 28px; display: flex; flex-direction: column; gap: 22px; }
+.hero .icon { width: 64px; height: 64px; }
+.hero h1 { font-size: clamp(32px, 7vw, 46px); color: var(--navy); }
+.hero .sub { font-family: var(--font-display); font-size: clamp(18px, 3.6vw, 22px); font-weight: 700; color: var(--ink-soft); margin-top: 8px; }
+.trio { display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px; }
+.trio > div { border-top: 3px solid var(--rc); padding-top: 10px; font-size: 15px; min-width: 0; }
+.trio b { display: block; font-family: var(--font-display); color: var(--rc); font-size: 16.5px; }
+@media (max-width: 460px) { .trio { grid-template-columns: 1fr; } }
+
+/* ---------- 진행자 메모 ---------- */
+.pnote { margin-top: 36px; border: 1px dashed var(--gold); border-radius: 8px; background: color-mix(in srgb, var(--gold) 6%, transparent); font-size: 15px; }
+.pnote summary { cursor: pointer; padding: 10px 14px; font-weight: 600; color: var(--gold); list-style: none; display: flex; justify-content: space-between; gap: 8px; }
+.pnote summary::-webkit-details-marker { display: none; }
+.pnote summary::after { content: "열기 ▾"; font-weight: 500; font-size: 13px; }
+.pnote[open] summary::after { content: "접기 ▴"; }
+.pnote .pbody { padding: 0 14px 14px; display: flex; flex-direction: column; gap: 6px; }
+.pnote .time { font-variant-numeric: tabular-nums; font-weight: 600; }
+.sr { position: absolute; width: 1px; height: 1px; overflow: hidden; clip: rect(0 0 0 0); white-space: nowrap; }
+</style>
+
+</head>
+<body>
+<div id="root"></div>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/react/18.3.1/umd/react.production.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/react-dom/18.3.1/umd/react-dom.production.min.js"></script>
+<script src="https://unpkg.com/htm@3.1.1/dist/htm.umd.js"></script>
+<script>
+(function () {
+const { useState, useEffect, useRef, useMemo } = React;
+const html = htm.bind(React.createElement);
+
+/* =================== 데이터 =================== */
+const ROLE_KEYS = ["life", "link", "delib"];
+const ROLES = {
+  life: { name: "생활권 시민", q: "“그래서 누가, 얼마나 편해지는가?”", desc: "당신은 정책이 사람들의 실제 일상에 어떤 변화를 만드는지 먼저 살핍니다.", view: "“학생들이 가장 자주 쓰는 자습실이 필요해.”" },
+  link: { name: "연결 시민", q: "“이 결정에 빠진 목소리는 없는가?”", desc: "당신은 결정에서 소외되는 사람이 없는지, 관계와 돌봄이 살아 있는지를 먼저 살핍니다.", view: "“학생과 지역주민이 함께 만나는 공간이 필요해.”" },
+  delib: { name: "숙의 시민", q: "“이 결정은 근거 있고 공정한가?”", desc: "당신은 충분한 정보와 공정한 절차가 있는지를 먼저 살핍니다.", view: "“먼저 수요와 예산을 확인하고 공정하게 결정해야 해.”" }
+};
+
+const QUESTIONS = [
+  { q: "빈 강의실을 발견했을 때 가장 먼저 드는 생각은?", o: ["시험기간에 공부할 조용한 공간이 더 필요하다.", "혼자 쉬거나 사람들과 편하게 머무를 공간이 있으면 좋겠다.", "현재 공간이 얼마나 부족한지 먼저 조사해야겠다."] },
+  { q: "중앙대학교 시설을 바꿀 때 가장 중요하다고 생각하는 기준은?", o: ["실제 이용자가 얼마나 자주, 편하게 사용할 수 있는가", "다양한 사람을 배제하지 않고 함께 사용할 수 있는가", "예산과 절차가 투명하고 공정한가"] },
+  { q: "친구가 “그냥 온라인 투표로 빨리 정하자”고 말한다면?", o: ["많은 학생이 참여할 수 있다면 괜찮다고 생각한다.", "온라인 투표에 참여하기 어려운 사람도 있을 수 있어 걱정된다.", "투표 전에 선택지와 근거가 충분히 제공되어야 한다고 생각한다."] },
+  { q: "공간을 가장 자주 이용하게 될 사람은 누구여야 한다고 생각해?", o: ["매일 학교에 다니는 학생", "공간이 부족하거나 소외되기 쉬운 사람까지 포함한 모두", "조사 결과 가장 필요도가 높은 집단"] },
+  { q: "인근 지역주민들이 중앙대학교 공간을 함께 쓰고 싶다고 요청한다면?", o: ["학생 이용에 방해가 없다면 일부 시간에는 가능하다.", "지역주민과 학교가 만나는 기회가 될 수 있어 적극 검토해야 한다.", "안전·관리 비용·이용 규칙을 검토한 뒤 결정해야 한다."] },
+  { q: "토론에서 내 의견과 반대되는 이야기를 들었을 때 나는?", o: ["내 생활에 어떤 영향이 있는지 다시 생각해 본다.", "그 사람이 왜 그렇게 느끼는지 먼저 듣고 싶다.", "어떤 근거와 자료에서 나온 주장인지 확인하고 싶다."] },
+  { q: "예산이 예상보다 적다면 무엇을 우선할까?", o: ["가장 많은 학생이 바로 사용할 수 있는 기능을 남긴다.", "누구도 이용에서 밀려나지 않도록 최소한의 공동 공간을 만든다.", "비용과 효과를 비교해 단계적으로 추진한다."] },
+  { q: "좋은 결정이란 무엇이라고 생각해?", o: ["실제 생활이 더 편해지는 결정", "서로 다른 사람들이 납득하고 함께 살아갈 수 있는 결정", "충분한 정보와 공정한 절차를 거친 결정"] },
+  { q: "발표가 끝난 뒤 중앙대학교 공간 활용 결과에 대해 내가 가장 궁금할 내용은?", o: ["그래서 학생들의 일상은 실제로 얼마나 좋아졌나?", "누구의 목소리가 결정 과정에서 빠졌나?", "어떤 자료와 기준으로 최종 결론을 냈나?"] }
+];
+
+const INITIAL_OPTS = [
+  { id: "study", label: "조용한 자습실" },
+  { id: "rest", label: "학생 휴게공간" },
+  { id: "community", label: "지역주민과 함께 쓰는 문화공간" },
+  { id: "undecided", label: "아직 결정하지 않음" }
+];
+const FINAL_OPTS = [
+  { id: "study", label: "조용한 자습실" },
+  { id: "rest", label: "학생 휴게공간" },
+  { id: "community", label: "지역주민과 함께 쓰는 문화공간" },
+  { id: "mixed", label: "두 가지 이상을 결합한 공간" },
+  { id: "discuss", label: "더 논의한 뒤 결정" }
+];
+const labelOf = (list, id) => (list.find(o => o.id === id) || {}).label || "—";
+
+const SCENES = [
+  {
+    title: "시험기간의 목소리", icon: "book",
+    narr: "중앙대학교의 시험기간. 도서관 좌석은 부족하고, 복도와 카페는 시끄럽습니다. 한 중앙대 학생은 조용히 공부할 곳이 없어 매일 집과 학교를 오갑니다.",
+    voices: [{ t: "시험 전날이면 빈자리를 찾아 건물을 몇 바퀴씩 돌아요. 앉을 곳을 찾는 데만 한 시간이 걸린 날도 있어요.", who: "시험기간을 보내는 중앙대 학생" }],
+    q: "이 이야기를 들은 뒤, 공간의 우선 이용자는 누가 되어야 할까요?",
+    o: ["학생의 학습권을 위해 자습실을 우선한다.", "자습과 휴식 기능을 함께 가진 공간으로 만든다.", "실제 수요 조사를 한 뒤 우선순위를 정한다."],
+    fb: [
+      { v: "학생의 학습권, 그리고 공간이 실제로 얼마나 자주 쓰일지를 살폈습니다.", r: "공부보다 휴식이 더 급한 학생이나 다른 이용자의 필요는 어떻게 살필 수 있을까요?" },
+      { v: "서로 다른 필요가 한 공간에서 함께 충족될 가능성을 살폈습니다.", r: "조용함이 필요한 자습과 대화가 오가는 휴식이 서로 방해하지 않으려면 어떤 규칙이 필요할까요?" },
+      { v: "개인의 경험을 넘어서는 근거와 대표성을 살폈습니다.", r: "조사가 진행되는 동안 지금 불편을 겪는 학생은 어떻게 지내야 할까요?" }
+    ],
+    common: "한 사람의 불편은 중요한 정보입니다. 하지만 한 사람의 경험만으로 모두의 결론을 정할 수 있을까요?",
+    lens: {
+      life: "이 학생이 매일 오가는 시간과 피로는 얼마나 줄어들까?",
+      link: "이 학생 말고, 아직 말하지 않은 학생은 무엇이 필요할까?",
+      delib: "이 경험은 얼마나 많은 학생에게 해당하는 이야기일까?"
+    }
+  },
+  {
+    title: "쉬고 싶은 학생의 목소리", icon: "chair",
+    narr: "다른 중앙대 학생은 말합니다. ‘공부할 곳도 중요하지만, 학교에는 혼자 쉬거나 친구와 이야기할 곳도 부족해요. 모든 공간이 성과를 위한 곳일 필요는 없잖아요.’",
+    voices: [{ t: "공강 시간에 잠깐 눈을 붙이거나 친구와 편하게 이야기할 곳이 있으면, 하루를 버티는 힘이 달라질 것 같아요.", who: "통학 시간이 긴 중앙대 학생" }],
+    q: "공간을 공부하는 곳으로만 보는 것은 충분할까요?",
+    o: ["시험기간에는 학습 공간을 우선하되, 평소에는 휴식 기능도 마련한다.", "휴식과 관계 형성도 학생 생활의 중요한 일부이므로 휴게공간을 우선한다.", "학습·휴식 수요를 조사하고 시간대별 이용 방안을 설계한다."],
+    fb: [
+      { v: "시기에 따라 달라지는 학생들의 필요를 살폈습니다.", r: "시험기간에 오히려 쉴 곳이 더 절실한 학생은 어디로 가야 할까요?" },
+      { v: "휴식과 관계 맺기가 학생 생활에서 갖는 의미를 살폈습니다.", r: "공부할 자리를 찾지 못하는 학생의 불편은 어떻게 함께 다룰 수 있을까요?" },
+      { v: "시간대별 수요라는 구체적 근거와 운영 설계를 살폈습니다.", r: "이용 방식이 복잡해지면 그 운영과 관리는 누가 맡게 될까요?" }
+    ],
+    common: "시민참여는 내 의견을 반복하는 일이 아니라, 내가 보지 못했던 필요를 발견하는 과정이기도 합니다.",
+    lens: {
+      life: "휴게공간이 생기면 학생들의 하루는 실제로 어떻게 달라질까?",
+      link: "혼자 쉴 곳이 없는 학생은 학교에서 어떤 소외감을 느낄까?",
+      delib: "학습과 휴식, 어느 쪽 수요가 얼마나 큰지 알 수 있는 자료는 있을까?"
+    }
+  },
+  {
+    title: "지역주민의 목소리", icon: "people",
+    narr: "중앙대학교 인근에 사는 주민은 ‘청소년과 주민이 함께 만날 문화공간이 거의 없다’고 말합니다. 반면 일부 중앙대 학생은 ‘우리 대학 공간이 왜 외부인에게 열려야 하느냐’고 묻습니다.",
+    voices: [
+      { t: "동네 아이들이 저녁에 모일 곳이 마땅치 않아요. 대학과 주민이 함께 쓰는 공간이 있다면 서로를 더 알 수 있을 것 같아요.", who: "중앙대학교 인근 주민" },
+      { t: "등록금을 내고 다니는 학생들도 공간이 부족한데, 외부 이용이 늘면 우리가 쓸 자리가 더 줄어들까 걱정돼요.", who: "중앙대 재학생" }
+    ],
+    q: "지역주민에게 공간을 열어야 할까요?",
+    o: ["학생 이용 시간이 보장된다면 제한적으로 개방한다.", "학교와 지역이 함께 사용하는 문화공간으로 적극 운영한다.", "안전·관리 인력·이용 규칙을 공개하고 공청회 후 결정한다."],
+    fb: [
+      { v: "학생의 이용을 보장하면서 지역과 연결될 여지를 살폈습니다.", r: "개방 시간과 범위의 기준은 누가, 어떤 방식으로 정해야 할까요?" },
+      { v: "대학과 지역이 관계를 맺는 공공의 가치를 살폈습니다.", r: "학생의 이용 시간과 늘어나는 관리 부담은 어떻게 조정할 수 있을까요?" },
+      { v: "안전과 투명한 규칙, 공개적인 의견 수렴 절차를 살폈습니다.", r: "공청회에 참석하기 어려운 학생과 주민의 의견은 어떻게 담을 수 있을까요?" }
+    ],
+    common: "논쟁적인 문제는 한쪽 의견만 보여 주지 않아야 합니다.",
+    lens: {
+      life: "개방하면 학생과 주민 각자의 일상은 어떻게 달라질까?",
+      link: "주민의 목소리와 걱정하는 학생의 목소리를 둘 다 들었을까?",
+      delib: "개방에 필요한 비용과 규칙은 어떤 자료로 확인할 수 있을까?"
+    }
+  },
+  {
+    title: "불편한 자료", icon: "doc",
+    narr: "중앙대학교의 공간 활용 조사 결과가 나왔습니다. 자습실 수요는 높지만, 휴게공간 부족을 호소한 학생들이 가장 큰 스트레스를 경험하고 있었습니다. 지역 개방에는 추가 관리비가 필요합니다.",
+    voices: [{ t: "숫자는 한 방향만 가리키지 않습니다. 수요가 가장 많은 것과 가장 절실한 것이 서로 다를 수 있다는 점이 이번 조사에서 드러났습니다.", who: "공간 활용 조사 담당자" }],
+    q: "새로운 자료를 본 뒤, 처음 생각을 바꾸겠습니까?",
+    o: ["처음 선택을 유지한다.", "다른 공간과 결합하는 절충안을 선택한다.", "더 많은 사람의 의견을 듣기 전까지 결정을 미룬다."],
+    fb: [
+      { v: "처음 판단의 근거와 일관성을 살폈습니다.", r: "새로운 자료는 처음 선택의 근거와 어떤 지점에서 맞닿고, 어떤 지점에서 어긋날까요?" },
+      { v: "새 자료에 따라 서로 다른 필요를 조정하는 방법을 살폈습니다.", r: "여러 기능을 결합하면 각 기능이 약해지지는 않을까요?" },
+      { v: "더 넓은 참여와 충분한 의견 수렴을 살폈습니다.", r: "결정을 미루는 동안 생기는 불편과 비용은 누가 감당하게 될까요?" }
+    ],
+    common: "새로운 정보에 따라 생각을 바꾸는 것은 우유부단함이 아니라 시민의 중요한 역량일 수 있습니다.",
+    lens: {
+      life: "이 자료에서 학생들의 일상에 가장 크게 닿는 숫자는 무엇일까?",
+      link: "가장 큰 스트레스를 겪는 학생들의 목소리는 지금까지 들렸을까?",
+      delib: "수요의 크기와 필요의 절실함 중 무엇을 기준으로 삼아야 할까?"
+    }
+  }
+];
+
+const NOTES = {
+  intro: ["약 1분", "제목과 소개 문구를 함께 읽어 주세요. “오늘은 정답을 맞히는 시간이 아니라, 내가 어떤 가치를 먼저 살피는지 알아보는 시간입니다.”라고 안내하세요."],
+  survey: ["약 3분", "문항을 소리 내어 읽되 특정 선택지에 힘을 주지 마세요. “가장 먼저 떠오르는 답을 고르세요.”라고 안내하세요."],
+  role: ["약 1분", "역할은 성향일 뿐 우열이 없다고 강조하세요. “내 역할의 핵심 질문이 평소 내 생각과 닮았나요?”라고 물어보세요."],
+  vote: ["약 30초", "지금의 생각을 가볍게 고르게 하세요. “마지막에 이 선택과 다시 비교해 볼 거예요.”라고 알려 주세요."],
+  scene0: ["약 1분", "특정 선택을 칭찬하지 말고, “누구의 필요가 보였나요?”라고 질문하세요."],
+  scene1: ["약 1분", "“성과를 위한 곳이 아닌 공간도 필요할까요?”라고 묻고, 서로 다른 답을 두세 명에게 들어 보세요."],
+  scene2: ["약 1분 30초", "주민과 학생의 목소리를 모두 소리 내어 읽으세요. 어느 한쪽 편을 들지 말고 “두 분의 걱정은 각각 무엇인가요?”라고 물어보세요."],
+  scene3: ["약 1분 30초", "생각을 바꾼 사람과 유지한 사람 모두에게 이유를 물어보세요. 어느 쪽도 더 낫다고 말하지 마세요."],
+  proposal: ["약 3분", "조별로 네 칸을 함께 채우게 하세요. “반드시 보호해야 할 사람”은 최대한 구체적으로 적도록 안내하세요."],
+  finalVote: ["약 30초", "처음 투표와 같은 방식으로 지금의 생각을 고르게 하세요."],
+  reflect: ["약 2분", "보이텔스바흐 원칙 세 가지를 읽고 마지막 문구로 마무리하세요. “처음과 달라진 점이 있었나요?”라고 물어보세요."]
+};
+
+const STEP_LABELS = ["시민 성향 찾기", "나의 역할", "시민회의", "최종 제안", "돌아보기"];
+const STAGE_STEP = { intro: 0, survey: 0, role: 1, vote: 1, meeting: 2, proposal: 3, finalVote: 4, reflect: 4 };
+
+/* =================== 아이콘 (선화) =================== */
+const ICONS = {
+  board: html`<g><rect x="3" y="4" width="18" height="11" rx="1"/><path d="M8 15l-2 6M16 15l2 6M12 15v3M7 8h6M7 11h4"/></g>`,
+  book: html`<path d="M12 6.5C10.5 5.3 8.2 4.8 4 5v13c4.2-.2 6.5.3 8 1.5 1.5-1.2 3.8-1.7 8-1.5V5c-4.2-.2-6.5.3-8 1.5Zm0 0V19.5"/>`,
+  chair: html`<path d="M7 3.5h10v7.5H7zM5 11h14v3H5zM7 14v6.5M17 14v6.5M8.5 17.5h7"/>`,
+  people: html`<g><circle cx="9" cy="8" r="3"/><circle cx="17" cy="9.5" r="2.4"/><path d="M3.5 20c0-3.3 2.5-6 5.5-6s5.5 2.7 5.5 6M15 14.5c3 0 5.5 2.2 5.5 5.5"/></g>`,
+  doc: html`<path d="M6 3h8l4 4v14H6zM14 3v4h4M9 11.5h6M9 14.5h6M9 17.5h4"/>`,
+  bubble: html`<path d="M4 5h16v10.5H10l-4.5 4v-4H4z"/>`,
+  pen: html`<path d="M4.5 19.5l4-1 10.5-10.5-3-3L5.5 15.5zM14.5 6.5l3 3"/>`,
+  loop: html`<path d="M4.5 12a7.5 7.5 0 1 0 2.2-5.3M4.5 4v4h4"/>`,
+  compass: html`<g><circle cx="12" cy="12" r="8.5"/><path d="M15 9l-1.8 4.2L9 15l1.8-4.2z"/></g>`
+};
+function Icon({ name, cls }) {
+  return html`<span class=${"icon " + (cls || "")} aria-hidden="true"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round">${ICONS[name]}</svg></span>`;
+}
+
+/* =================== 상태 =================== */
+const KEY = "empty-classroom-cau-v1";
+const fresh = () => ({
+  stage: "intro", qIndex: 0, answers: Array(9).fill(null), chosenRole: null,
+  initialOpinion: null, scene: 0, sceneChoices: [null, null, null, null],
+  proposal: { a: "", b: "", c: "", d: "" }, finalOpinion: null
+});
+function load() {
+  try { const s = JSON.parse(sessionStorage.getItem(KEY)); if (s && s.stage) return Object.assign(fresh(), s); } catch (e) {}
+  return fresh();
+}
+function computeScores(answers) {
+  const s = { life: 0, link: 0, delib: 0 };
+  answers.forEach(a => { if (a !== null) s[ROLE_KEYS[a]] += 1; });
+  return s;
+}
+function topRoles(scores) {
+  const max = Math.max(scores.life, scores.link, scores.delib);
+  return ROLE_KEYS.filter(k => scores[k] === max);
+}
+function isPresenter() {
+  try {
+    const p = new URLSearchParams(location.search).get("presenter");
+    if (p === "true") return true;
+    return /(^#|&)presenter(=true)?($|&)/.test(location.hash);
+  } catch (e) { return false; }
+}
+
+/* =================== 공용 컴포넌트 =================== */
+function Options({ name, legend, items, value, onChange, keys }) {
+  return html`<fieldset class="options">
+    ${legend ? html`<legend>${legend}</legend>` : null}
+    ${items.map((t, i) => html`
+      <label class="opt" key=${i}>
+        <input type="radio" id=${name + "-" + i} name=${name} checked=${value === i} onChange=${() => onChange(i)} />
+        <span class="key" aria-hidden="true">${keys ? keys[i] : String.fromCharCode(65 + i)}</span>
+        <span class="txt">${t}</span>
+      </label>`)}
+  </fieldset>`;
+}
+function PresenterNote({ id, on }) {
+  if (!on || !NOTES[id]) return null;
+  const [time, text] = NOTES[id];
+  return html`<details class="pnote" key=${id}>
+    <summary>진행자 메모</summary>
+    <div class="pbody"><span class="time">예상 진행 시간 · ${time}</span><p>${text}</p></div>
+  </details>`;
+}
+function Title({ children, level }) {
+  const Tag = level === 1 ? "h1" : "h2";
+  return html`<${Tag} id="screen-title" tabIndex="-1">${children}<//>`;
+}
+function RoleChip({ role }) {
+  if (!role) return null;
+  return html`<span class=${"chip role role-" + role}>${ROLES[role].name}</span>`;
+}
+
+/* =================== 화면 =================== */
+function Intro({ go }) {
+  return html`<section class="hero screen">
+    <${Icon} name="board" />
+    <div>
+      <${Title} level=${1}>빈 강의실의 세 가지 목소리<//>
+      <p class="sub">우리는 무엇을 기준으로 함께 결정할까?</p>
+    </div>
+    <p class="lede">중앙대학교 캠퍼스의 빈 강의실 하나. 누군가는 조용한 자습실을, 누군가는 학생 휴게공간을, 또 다른 누군가는 지역과 함께 쓰는 문화공간을 원합니다. 중앙대의 이 공간은 누구를 위해, 어떻게 활용되어야 할까요?</p>
+    <div class="trio">
+      <div class="role role-life"><b>생활권 시민</b>일상의 변화를 먼저 봅니다</div>
+      <div class="role role-link"><b>연결 시민</b>빠진 목소리를 먼저 봅니다</div>
+      <div class="role role-delib"><b>숙의 시민</b>근거와 절차를 먼저 봅니다</div>
+    </div>
+    <div class="actions"><button class="btn big" onClick=${go}>시민 성향 알아보기</button></div>
+    <p class="note">이 검사는 정답을 찾는 검사가 아닙니다. 내가 어떤 가치를 먼저 살피는지 알아보는 활동입니다.</p>
+    <p class="small muted">이 활동은 중앙대학교 학생·교직원·인근 지역주민이 함께 논의하는 가상 상황입니다. 특정 캠퍼스나 실제 건물을 가리키지 않습니다.</p>
+  </section>`;
+}
+
+function Survey({ s, set }) {
+  const i = s.qIndex, Q = QUESTIONS[i], val = s.answers[i];
+  const choose = (k) => { const a = s.answers.slice(); a[i] = k; set({ answers: a }); };
+  const next = () => {
+    if (val === null) return;
+    if (i < 8) set({ qIndex: i + 1 });
+    else {
+      const tops = topRoles(computeScores(s.answers));
+      set({ stage: "role", chosenRole: tops.length === 1 ? tops[0] : (tops.includes(s.chosenRole) ? s.chosenRole : null) });
+    }
+  };
+  return html`<section class="screen" key=${"q" + i}>
+    <div class="headrow">
+      <${Icon} name="compass" />
+      <div><p class="eyebrow">1단계 · 시민 성향 설문</p><p class="counter" aria-live="polite">${i + 1} / 9</p></div>
+    </div>
+    <div class="qbar" aria-hidden="true"><span style=${{ width: ((i + 1) / 9 * 100) + "%" }}></span></div>
+    <h2 class="sr" id="screen-title" tabIndex="-1">질문 ${i + 1}. ${Q.q}</h2>
+    <${Options} name=${"q" + i} legend=${"Q" + (i + 1) + ". " + Q.q} items=${Q.o} value=${val} onChange=${choose} />
+    <div class="actions">
+      ${i > 0 ? html`<button class="btn ghost" onClick=${() => set({ qIndex: i - 1 })}>이전 질문</button>` : html`<span></span>`}
+      <button class="btn" disabled=${val === null} onClick=${next}>${i < 8 ? "다음 질문" : "나의 역할 보기"}</button>
+    </div>
+    ${val === null ? html`<p class="small muted">답을 하나 고르면 다음으로 넘어갈 수 있습니다.</p>` : null}
+  </section>`;
+}
+
+function RoleCard({ role }) {
+  const R = ROLES[role];
+  return html`<article class=${"rolecard role role-" + role}>
+    <div class="rhead"><div class="rname">${R.name}</div><p class="rq">${R.q}</p></div>
+    <div class="rbody">
+      <dl class="kv">
+        <dt>설명</dt><dd>${R.desc}</dd>
+        <dt>시작 관점</dt><dd>${R.view}</dd>
+      </dl>
+    </div>
+  </article>`;
+}
+
+function RoleResult({ s, set }) {
+  const scores = computeScores(s.answers);
+  const tops = topRoles(scores);
+  const tie = tops.length > 1;
+  return html`<section class="screen">
+    <div class="headrow"><${Icon} name="people" /><div><p class="eyebrow">2단계 · 나의 역할</p>
+      <${Title}>${tie ? "당신은 복합 시민입니다" : "당신의 시작 역할은 " + ROLES[tops[0]].name + "입니다"}<//></div></div>
+    ${tie
+      ? html`<p class="lede">${tops.map(k => ROLES[k].name).join(", ")}의 응답 수가 같습니다. 여러 가치를 함께 살피는 관점입니다. 이번 시민회의를 어떤 역할로 시작할지 직접 골라 주세요.</p>
+        <fieldset class="options tie-pick">
+          <legend>나의 시작 역할 고르기</legend>
+          ${tops.map(k => html`<label class=${"opt role role-" + k} key=${k}>
+            <input type="radio" id=${"tie-" + k} name="tie" checked=${s.chosenRole === k} onChange=${() => set({ chosenRole: k })} />
+            <span class="key" aria-hidden="true">✓</span>
+            <span class="txt"><b>${ROLES[k].name}</b> — ${ROLES[k].q}</span>
+          </label>`)}
+        </fieldset>
+        ${s.chosenRole ? html`<div class="reveal" key=${s.chosenRole}><${RoleCard} role=${s.chosenRole} /></div>` : null}`
+      : html`<${RoleCard} role=${tops[0]} />`}
+    <div>
+      <p class="small muted" style=${{ marginBottom: "10px" }}>응답 분포 (9문항 중 고른 수)</p>
+      <div class="scores">
+        ${ROLE_KEYS.map(k => html`<div class=${"score role role-" + k} key=${k}>
+          <div class="n">${scores[k]}</div><div class="l">${ROLES[k].name}</div>
+          <div class="dots" aria-hidden="true">${Array.from({ length: 9 }, (_, j) => html`<i key=${j} class=${j < scores[k] ? "on" : ""}></i>`)}</div>
+        </div>`)}
+      </div>
+    </div>
+    <p class="note">세 역할 사이에 더 낫거나 못한 것은 없습니다. 각 역할은 같은 문제를 다른 질문으로 바라보는 출발점입니다.</p>
+    <div class="actions">
+      <button class="btn ghost" onClick=${() => set({ stage: "survey", qIndex: 8 })}>설문으로 돌아가기</button>
+      <button class="btn" disabled=${!s.chosenRole} onClick=${() => set({ stage: "vote" })}>시민회의에 참여하기</button>
+    </div>
+  </section>`;
+}
+
+function Vote({ s, set }) {
+  const idx = INITIAL_OPTS.findIndex(o => o.id === s.initialOpinion);
+  return html`<section class="screen">
+    <div class="headrow"><${Icon} name="bubble" /><div><p class="eyebrow">3단계 · 시작 의견 투표</p><${Title}>지금, 중앙대학교의 빈 강의실을 어떻게 활용하고 싶나요?<//></div></div>
+    <p class="muted">지금 떠오르는 생각을 그대로 골라 주세요. 시민회의를 마친 뒤 다시 한번 묻습니다.</p>
+    <${Options} name="initial" items=${INITIAL_OPTS.map(o => o.label)} keys=${["1", "2", "3", "4"]} value=${idx < 0 ? null : idx} onChange=${(i) => set({ initialOpinion: INITIAL_OPTS[i].id })} />
+    <div class="actions">
+      <button class="btn ghost" onClick=${() => set({ stage: "role" })}>역할 다시 보기</button>
+      <button class="btn" disabled=${!s.initialOpinion} onClick=${() => set({ stage: "meeting", scene: 0 })}>시민회의 시작하기</button>
+    </div>
+  </section>`;
+}
+
+function Summary({ s }) {
+  return html`<div class=${"summary role role-" + s.chosenRole}>
+    <span><span class="muted">나의 역할</span> <${RoleChip} role=${s.chosenRole} /></span>
+    <span><span class="muted">시작 의견</span> <b>${labelOf(INITIAL_OPTS, s.initialOpinion)}</b></span>
+  </div>`;
+}
+
+function Meeting({ s, set }) {
+  const n = s.scene, S = SCENES[n], choice = s.sceneChoices[n], role = s.chosenRole;
+  const choose = (i) => { const c = s.sceneChoices.slice(); c[n] = i; set({ sceneChoices: c }); };
+  const next = () => { if (n < 3) set({ scene: n + 1 }); else set({ stage: "proposal" }); };
+  return html`<section class="screen" key=${"scene" + n}>
+    <${Summary} s=${s} />
+    <div class="headrow"><${Icon} name=${S.icon} /><div><p class="eyebrow">4단계 · 시민회의 · 장면 ${n + 1} / 4</p><${Title}>${S.title}<//></div></div>
+
+    <div class="block">
+      <div class="blabel">다큐 나레이션</div>
+      <p class="narr">${S.narr}</p>
+    </div>
+
+    <div class="block">
+      <div class="blabel">누군가의 목소리</div>
+      <div class="voices">
+        ${S.voices.map((v, k) => html`<div class="voice" key=${k}><${Icon} name="bubble" />
+          <blockquote><p>“${v.t}”</p><cite>— ${v.who}</cite></blockquote></div>`)}
+      </div>
+      <p class=${"lens role role-" + role}><b>${ROLES[role].name}의 질문</b> · ${S.lens[role]}</p>
+    </div>
+
+    ${n === 3 ? html`<div class="block">
+      <div class="blabel">지금까지 나의 기록</div>
+      <ul class="path">
+        <li><span>시작 의견</span><span><b>${labelOf(INITIAL_OPTS, s.initialOpinion)}</b></span></li>
+        ${[0, 1, 2].map(k => html`<li key=${k}><span>장면 ${k + 1}</span><span>${SCENES[k].o[s.sceneChoices[k]] || "—"}</span></li>`)}
+      </ul>
+    </div>` : null}
+
+    <div class="block">
+      <div class="blabel">당신의 선택</div>
+      <${Options} name=${"scene" + n} legend=${S.q} items=${S.o} value=${choice} onChange=${choose} />
+    </div>
+
+    <div aria-live="polite">
+      ${choice !== null ? html`<div class="block reveal" key=${"fb" + n + "-" + choice}>
+        <div class="feedback">
+          <div class="card val"><h3>이 선택이 살핀 가치</h3><p>${S.fb[choice].v}</p></div>
+          <div class="card que"><h3>아직 남은 질문</h3><p>${S.fb[choice].r}</p></div>
+        </div>
+        ${n === 3 && choice === 0 ? html`<p class="small muted">유지한 처음 의견: <b>${labelOf(INITIAL_OPTS, s.initialOpinion)}</b></p>` : null}
+        <p class="common">${S.common}</p>
+      </div>` : null}
+    </div>
+
+    <div class="actions">
+      <button class="btn ghost" onClick=${() => n > 0 ? set({ scene: n - 1 }) : set({ stage: "vote" })}>이전으로</button>
+      <button class="btn" disabled=${choice === null} onClick=${next}>${n < 3 ? "다음 목소리 듣기" : "최종 제안 쓰기"}</button>
+    </div>
+  </section>`;
+}
+
+const FIELDS = [
+  { k: "a", label: "우리 팀의 최종 제안", ph: "예: 평일 낮에는 자습·휴식 공간, 주 1회 저녁에는 지역 문화 프로그램으로 운영" },
+  { k: "b", label: "우리가 가장 중요하게 본 목소리", ph: "예: 휴게공간 부족으로 가장 큰 스트레스를 겪는 학생들" },
+  { k: "c", label: "처음 생각과 달라진 점", ph: "예: 처음에는 자습실만 생각했지만, 쉬는 공간의 필요도 알게 되었다" },
+  { k: "d", label: "이 결정에서 반드시 보호해야 할 사람", ph: "예: 시험기간에 갈 곳이 없는 통학생" }
+];
+function ProposalDoc({ s }) {
+  return html`<article class="doc" aria-label="시민회의 제안서">
+    <header class="doc-head">
+      <h3>시민회의 제안서</h3>
+      <p class="meta">안건 · 중앙대학교 캠퍼스의 남는 강의실 활용</p>
+    </header>
+    <dl>
+      ${FIELDS.map(f => html`<div key=${f.k}><dt>${f.label}</dt>
+        <dd class=${s.proposal[f.k].trim() ? "" : "empty"}>${s.proposal[f.k].trim() || "아직 작성하지 않았습니다."}</dd></div>`)}
+    </dl>
+    <footer class="doc-foot">
+      <span>작성자 역할 · ${ROLES[s.chosenRole] ? ROLES[s.chosenRole].name : "—"}</span>
+      <span>시작 의견 · ${labelOf(INITIAL_OPTS, s.initialOpinion)}</span>
+    </footer>
+  </article>`;
+}
+function Proposal({ s, set }) {
+  const upd = (k, v) => set({ proposal: Object.assign({}, s.proposal, { [k]: v }) });
+  return html`<section class="screen">
+    <div class="headrow"><${Icon} name="pen" /><div><p class="eyebrow">5단계 · 최종 제안</p><${Title}>우리 팀의 제안을 정리해 봅시다<//></div></div>
+    <p class="muted">네 칸을 채우면 아래 제안서에 바로 정리됩니다. 비워 둔 칸이 있어도 다음으로 넘어갈 수 있습니다.</p>
+    <div class="block">
+      ${FIELDS.map((f, i) => html`<div class="field" key=${f.k}>
+        <label for=${"p-" + f.k}>${i + 1}. ${f.label}</label>
+        <textarea id=${"p-" + f.k} value=${s.proposal[f.k]} placeholder=${f.ph} onChange=${e => upd(f.k, e.target.value)}></textarea>
+      </div>`)}
+    </div>
+    <${ProposalDoc} s=${s} />
+    <div class="actions">
+      <button class="btn ghost" onClick=${() => set({ stage: "meeting", scene: 3 })}>시민회의로 돌아가기</button>
+      <button class="btn" onClick=${() => set({ stage: "finalVote" })}>최종 의견 투표하기</button>
+    </div>
+  </section>`;
+}
+
+function FinalVote({ s, set }) {
+  const idx = FINAL_OPTS.findIndex(o => o.id === s.finalOpinion);
+  return html`<section class="screen">
+    <div class="headrow"><${Icon} name="bubble" /><div><p class="eyebrow">6단계 · 돌아보기</p><${Title}>이제 당신은 중앙대학교의 빈 강의실을 어떻게 활용하고 싶나요?<//></div></div>
+    <${Options} name="final" items=${FINAL_OPTS.map(o => o.label)} keys=${["1", "2", "3", "4", "5"]} value=${idx < 0 ? null : idx} onChange=${(i) => set({ finalOpinion: FINAL_OPTS[i].id })} />
+    <div class="actions">
+      <button class="btn ghost" onClick=${() => set({ stage: "proposal" })}>제안서로 돌아가기</button>
+      <button class="btn" disabled=${!s.finalOpinion} onClick=${() => set({ stage: "reflect" })}>돌아보기 결과 보기</button>
+    </div>
+  </section>`;
+}
+
+function Reflect({ s, restart }) {
+  const same = s.initialOpinion === s.finalOpinion || (s.initialOpinion === "undecided" && s.finalOpinion === "discuss");
+  return html`<section class="screen">
+    <div class="headrow"><${Icon} name="loop" /><div><p class="eyebrow">6단계 · 돌아보기</p><${Title}>나의 생각은 어떻게 움직였을까요?<//></div></div>
+    <div class="compare">
+      <div class="card"><div class="k">처음 의견</div><div class="v">${labelOf(INITIAL_OPTS, s.initialOpinion)}</div></div>
+      <div class="arr" aria-hidden="true">→</div>
+      <div class="card"><div class="k">최종 의견</div><div class="v">${labelOf(FINAL_OPTS, s.finalOpinion)}</div></div>
+    </div>
+    <p class="verdict">${same ? "처음의 관점을 유지했지만, 다른 입장을 검토하는 과정을 거쳤습니다." : "새로운 목소리와 정보를 만나며 관점이 확장되었습니다."}</p>
+
+    <div class="card block">
+      <div class="blabel">시민회의에서 내가 살핀 가치</div>
+      <p class="small"><span class="muted">시작 역할</span> <${RoleChip} role=${s.chosenRole} /></p>
+      <ul class="path">
+        ${SCENES.map((S, k) => html`<li key=${k}><span>${S.title}</span><span>${s.sceneChoices[k] !== null ? S.fb[s.sceneChoices[k]].v : "—"}</span></li>`)}
+      </ul>
+    </div>
+
+    <${ProposalDoc} s=${s} />
+
+    <div class="card">
+      <div class="blabel" style=${{ marginBottom: "6px" }}>보이텔스바흐 원칙으로 돌아보기</div>
+      <div class="principles">
+        <div class="principle"><h3>강제성 금지</h3><p>특정 선택을 해야 좋은 시민이라고 말하지 않았습니다.</p></div>
+        <div class="principle"><h3>논쟁성 보장</h3><p>자습실, 휴게공간, 지역 개방의 장단점을 함께 다뤘습니다.</p></div>
+        <div class="principle"><h3>학습자 이해관계 반영</h3><p>각자는 자신의 생활과 가치관을 바탕으로 판단하고, 새로운 정보에 따라 의견을 조정할 수 있었습니다.</p></div>
+      </div>
+    </div>
+
+    <p class="closing">시민참여교육은 무엇을 믿으라고 가르치는 일이 아니라, 무엇을 질문하고 누구의 목소리를 들을지 함께 배우는 과정입니다.</p>
+    <div class="actions" style=${{ justifyContent: "center" }}><button class="btn big" onClick=${restart}>처음부터 다시 참여하기</button></div>
+  </section>`;
+}
+
+/* =================== 앱 =================== */
+function App() {
+  const [s, setS] = useState(load);
+  const presenter = useMemo(isPresenter, []);
+  const first = useRef(true);
+  const set = (patch) => setS(prev => Object.assign({}, prev, patch));
+
+  useEffect(() => { try { sessionStorage.setItem(KEY, JSON.stringify(s)); } catch (e) {} }, [s]);
+  useEffect(() => {
+    if (first.current) { first.current = false; return; }
+    window.scrollTo({ top: 0, behavior: "auto" });
+    const t = document.getElementById("screen-title");
+    if (t) t.focus({ preventScroll: true });
+  }, [s.stage, s.qIndex, s.scene]);
+
+  const restart = () => { try { sessionStorage.removeItem(KEY); } catch (e) {} setS(fresh()); };
+  const step = STAGE_STEP[s.stage];
+  const noteId = s.stage === "meeting" ? "scene" + s.scene : s.stage;
+
+  let screen;
+  switch (s.stage) {
+    case "survey": screen = html`<${Survey} s=${s} set=${set} />`; break;
+    case "role": screen = html`<${RoleResult} s=${s} set=${set} />`; break;
+    case "vote": screen = html`<${Vote} s=${s} set=${set} />`; break;
+    case "meeting": screen = html`<${Meeting} s=${s} set=${set} />`; break;
+    case "proposal": screen = html`<${Proposal} s=${s} set=${set} />`; break;
+    case "finalVote": screen = html`<${FinalVote} s=${s} set=${set} />`; break;
+    case "reflect": screen = html`<${Reflect} s=${s} restart=${restart} />`; break;
+    default: screen = html`<${Intro} go=${() => set({ stage: "survey", qIndex: 0 })} />`;
+  }
+
+  return html`<div>
+    <header class="top">
+      <div class="top-inner">
+        <div class="brand">
+          <span class="brand-name">빈 강의실의 세 가지 목소리</span>
+          ${presenter ? html`<span class="badge">발표 모드</span>` : null}
+        </div>
+        <ol class="steps" aria-label="진행 단계">
+          ${STEP_LABELS.map((l, i) => html`<li key=${i} class=${i < step ? "done" : i === step ? "now" : ""} aria-current=${i === step ? "step" : undefined}>
+            <div class="bar"></div><span class="lbl">${l}</span></li>`)}
+        </ol>
+      </div>
+    </header>
+    <main class="wrap" key=${s.stage}>
+      ${screen}
+      <${PresenterNote} id=${noteId} on=${presenter} key=${noteId} />
+    </main>
+  </div>`;
+}
+
+ReactDOM.createRoot(document.getElementById("root")).render(html`<${App} />`);
+})();
+</script>
+</body>
+</html>
